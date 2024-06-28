@@ -2,7 +2,7 @@ import logging
 from typing import List, Dict, Any
 import pandas as pd
 
-from goldenpear_tools.apis_wallet.gemini import fetch_gemini_user_perps_balances, fetch_gemini_user_spot_balances
+from apis.gemini import fetch_gemini_user_perps_balances, fetch_gemini_user_spot_balances
 
 logging.basicConfig(level=logging.INFO)
 

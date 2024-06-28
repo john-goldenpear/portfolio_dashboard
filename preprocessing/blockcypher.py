@@ -1,6 +1,6 @@
 import logging
 from typing import Dict, Any, List
-from goldenpear_tools.apis_wallet.blockcypher import fetch_blockcypher_user_balance
+from apis.blockcypher import fetch_blockcypher_user_balance
 
 logging.basicConfig(level=logging.INFO)
 

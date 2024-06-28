@@ -1,7 +1,7 @@
 import logging
 from typing import List, Dict, Any
 
-from goldenpear_tools.apis_wallet.debank import fetch_debank_user_balances_tokens, fetch_debank_user_balances_protocol
+from apis.debank import fetch_debank_user_balances_tokens, fetch_debank_user_balances_protocol
 
 logging.basicConfig(level=logging.INFO)
 

@@ -1,4 +1,4 @@
-from goldenpear_tools.apis_wallet.relayer import fetch_relayer_positions
+from apis.relayer import fetch_relayer_positions
 
 # Mapping of chain numbers to chain names
 CHAIN_MAP = {

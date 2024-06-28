@@ -1,6 +1,6 @@
 import logging
 from typing import Dict, Any, List
-from goldenpear_tools.apis_wallet.dydxv3 import dydxClient
+from apis.dydxv3 import dydxClient
 
 logging.basicConfig(level=logging.INFO)
 

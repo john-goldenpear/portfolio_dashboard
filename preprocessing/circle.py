@@ -1,6 +1,6 @@
 import logging
 from typing import List, Dict, Any
-from goldenpear_tools.apis_wallet.circle import fetch_circle_user_balance
+from apis.circle import fetch_circle_user_balance
 
 logging.basicConfig(level=logging.INFO)
 
