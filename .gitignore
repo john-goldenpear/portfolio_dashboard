@@ -1,0 +1,23 @@
+# Ignore files holding sensitive information
+.env
+/dicts/wallets.xlsx
+
+# Ignore virtual environment directories
+.venv-py311/
+.venv/
+venv/
+
+# Ignore Python cache files
+__pycache__/
+*.py[cod]
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE specific files
+.vscode/
+.idea/
