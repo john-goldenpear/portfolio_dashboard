@@ -4,14 +4,14 @@ from apis.dydxv3 import dydxClient
 
 logging.basicConfig(level=logging.INFO)
 
-def create_position(wallet: Dict[str, str], position_type: str, symbol: str, amount: float, price: float) -> Dict[str, Any]:
+def create_position(wallet: Dict[str, str], position_type: str, symbol: str, market: str, amount: float, price: float) -> Dict[str, Any]:
     """
     Helper function to create a position dictionary.
 
     Args:
         wallet (dict): Wallet information.
         market (str): Market symbol.
-        position_type (str): Type of position (e.g., 'perps', 'income').
+        position_type (str): Type of position (e.g., 'perps', 'funding', 'collateral').
         symbol (str): Symbol of the asset.
         amount (float): Amount of the asset.
         price (float): Price of the asset.
@@ -20,13 +20,14 @@ def create_position(wallet: Dict[str, str], position_type: str, symbol: str, amo
         dict: Position dictionary.
     """
     return {
+        'wallet_id': wallet['id'],
         'wallet_address': wallet['address'],
         'wallet_type': wallet['type'],
         'strategy': wallet['strategy'],
-        'position_id': f'dydxv3-{symbol}-{position_type}',
+        'position_id': f'dydxv3-{market}-{position_type}',
         'chain': 'starkware',
-        'protocol_id': 'dydxv3',
-        'type': 'perps',
+        'protocol': 'dydxv3',
+        'type': position_type,
         'symbol': symbol,
         'amount': amount,
         'price': price
@@ -63,15 +64,14 @@ def process_dydxv3_data(dydxv3_data: Dict[str, Any], wallet: Dict[str, str]) -> 
 
         for position_details, amount, price, position_value in positions:
             collateral_attribution = position_value / total_account_position_value
-            market = position_details['market']
-            symbol = market.split('-')[0]  # Extract symbol from market (e.g., 'BTC-USD' -> 'BTC')
+            market = position_details['market'].split('-')[0]  # Extract symbol from market (e.g., 'BTC-USD' -> 'BTC')
+            symbol = position_details['market'].split('-')[0]  # Extract symbol from market (e.g., 'BTC-USD' -> 'BTC')
 
-            position = create_position(wallet, 'perp', symbol, amount, price)
-            proceeds_or_cost = create_position(wallet, 'cost', 'USDC', -amount * entry_price, 1)
-            funding = create_position(wallet, 'funding', 'USDC', float(position_details['netFunding']), 1)
-            collateral = create_position(wallet, 'collateral', 'USDC', collateral_attribution * total_equity, 1)
+            position = create_position(wallet, 'perp', symbol, market, amount, price)
+            funding = create_position(wallet, 'perp-funding', 'USDC', market, float(position_details['netFunding']), 1)
+            collateral = create_position(wallet, 'perp-collateral', 'USDC', market, collateral_attribution * total_equity, 1)
 
-            data.extend([position, proceeds_or_cost, funding, collateral])
+            data.extend([position, funding, collateral])
     else:
         data.append(create_position(wallet, 'cash', 'hodl', 'USDC', total_equity, 1))
 

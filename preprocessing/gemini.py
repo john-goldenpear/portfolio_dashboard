@@ -21,12 +21,13 @@ def create_position(wallet: Dict[str, str], data_type: str, currency: str, amoun
         dict: Position dictionary.
     """
     return {
+        'wallet_id': wallet['id'],
         'wallet_address': wallet['address'],
         'wallet_type': wallet['type'],
         'strategy': wallet['strategy'],
         'position_id': f'gemini-{data_type}-{currency}',
         'chain': 'gemini',
-        'protocol_id': 'gemini',
+        'protocol': 'gemini',
         'type': ('hodl' if data_type == 'spot' else 'perps'),
         'symbol': currency,
         'amount': amount,

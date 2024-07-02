@@ -63,12 +63,13 @@ def process_relayer_position_data(relayer_data, wallet):
         chain_name = CHAIN_MAP.get(str(chain_number), 'unknown')
         for token, details in tokens.items():
             processed_data.append({
+                'wallet_id': wallet['id'],
                 'wallet_address': wallet['address'],
                 'wallet_type': wallet['type'],
                 'strategy': wallet['strategy'],
-                'position_id': f'across-relay' + ('ETH' if token == 'nativeToken' else token),
+                'position_id': f'across-relay' + '-' + ('ETH' if token == 'nativeToken' else token),
                 'chain': chain_name,
-                'protocol_id': 'across-relay',
+                'protocol': 'across-relay',
                 'type': ('hodl' if token == 'nativeToken' else 'relaying'),
                 'symbol': ('ETH' if token == 'nativeToken' else token),
                 'amount': details.get('balance', 0) / (10 ** 18),  # Divide by 10^18 for human-readable format

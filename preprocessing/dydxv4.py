@@ -21,14 +21,14 @@ def fetch_dydxv4_address_info(address: str) -> Dict[str, Any]:
     response.raise_for_status()  # Raise an exception for HTTP errors
     return response.json()
 
-def create_position(wallet: Dict[str, str], market: str, position_type: str, symbol: str, amount: float, price: float) -> Dict[str, Any]:
+def create_position(wallet: Dict[str, str], position_type: str, symbol: str, market: str, amount: float, price: float) -> Dict[str, Any]:
     """
     Helper function to create a position dictionary.
 
     Args:
         wallet (dict): Wallet information.
         market (str): Market symbol.
-        position_type (str): Type of position (e.g., 'perps', 'income').
+        position_type (str): Type of position (e.g., 'perps', 'funding', 'collateral').
         symbol (str): Symbol of the asset.
         amount (float): Amount of the asset.
         price (float): Price of the asset.
@@ -37,12 +37,13 @@ def create_position(wallet: Dict[str, str], market: str, position_type: str, sym
         dict: Position dictionary.
     """
     return {
+        'wallet_id': wallet['id'],
         'wallet_address': wallet['address'],
         'wallet_type': wallet['type'],
         'strategy': wallet['strategy'],
         'position_id': f'dydxv4-{market}-{position_type}',
-        'chain': 'dydxv4',
-        'protocol_id': 'dydxv4',
+        'chain': 'dydx',
+        'protocol': 'dydxv4',
         'type': position_type,
         'symbol': symbol,
         'amount': amount,
@@ -83,13 +84,13 @@ def process_dydxv4_data(dydxv4_data: Dict[str, Any], wallet: Dict[str, str]) -> 
             for position_details, amount, price, position_value in positions:
                 collateral_attribution = position_value / total_account_position_value
                 market = position_details['market']
+                symbol = position_details['market']
 
-                position = create_position(wallet, market, f'{subaccount_number}-perp', market, amount, price)
-                proceeds_or_cost = create_position(wallet, market, f'{subaccount_number}-cost', 'USDC', -amount, 1)
-                funding = create_position(wallet, market, f'{subaccount_number}-funding', 'USDC', float(position_details['netFunding']), 1)
-                collateral = create_position(wallet, market, f'{subaccount_number}-collateral', 'USDC', collateral_attribution * total_equity, 1)
+                position = create_position(wallet, f'{subaccount_number}-perp', symbol, market, amount, price)
+                funding = create_position(wallet, f'{subaccount_number}-perp-funding', 'USDC', market, float(position_details['netFunding']), 1)
+                collateral = create_position(wallet, f'{subaccount_number}-perp-collateral', 'USDC', market, collateral_attribution * total_equity, 1)
 
-                data.extend([position, proceeds_or_cost, funding, collateral])
+                data.extend([position, funding, collateral])
         else:
             data.append(create_position(wallet, 'cash', 'hodl', 'USDC', total_equity, 1))
 

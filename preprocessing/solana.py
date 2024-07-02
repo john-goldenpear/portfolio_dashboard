@@ -24,12 +24,13 @@ def create_position(wallet: Dict[str, str], position_id: str, symbol: str, amoun
         dict: Position dictionary.
     """
     return {
+        'wallet_id': wallet['id'],
         'wallet_address': wallet['address'],
         'wallet_type': wallet['type'],
         'strategy': wallet['strategy'],
         'position_id': position_id,
         'chain': 'sol',
-        'protocol_id': 'wallet',
+        'protocol': 'wallet',
         'type': 'hodl',
         'symbol': symbol,
         'amount': amount,

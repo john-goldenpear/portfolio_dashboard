@@ -16,12 +16,13 @@ def create_position(wallet: Dict[str, str], amount: float) -> Dict[str, Any]:
         dict: Position dictionary.
     """
     return {
+        'wallet_id': wallet['id'],
         'wallet_address': wallet['address'],
         'wallet_type': wallet['type'],
         'strategy': wallet['strategy'],
         'position_id': f'circle-cash',
         'chain': 'circle',
-        'protocol_id': 'circle',
+        'protocol': 'circle',
         'type': 'hodl',
         'symbol': 'USDC',
         'amount': amount,
