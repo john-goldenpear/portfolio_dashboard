@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from config import WALLETS, SOLANA_TOKENS, ASSETS_DICT
 
 from apis.circle import fetch_circle_user_balance
@@ -28,7 +28,7 @@ log_file_path = r'C:\Users\JohnRogic\OneDrive - Golden Pear\Shared Documents - G
 logging.basicConfig(filename=log_file_path, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Log script start time
-start_time = datetime.now()
+start_time = datetime.utcnow()
 logging.info("Script started.")
 
 all_positions = []
@@ -100,16 +100,15 @@ for wallet in WALLETS:
 positions_df = pd.DataFrame(all_positions)
 
 # Add date column
-positions_df['date'] = pd.to_datetime('today').date()
+positions_df['date'] = start_time.date()
 
 # Fetch prices for rows where price is None (solana, btc, and doge)
 symbols_to_fetch = positions_df[positions_df['price'].isnull()]['symbol'].unique()
 prices = fetch_multiple_prices(symbols_to_fetch)
 positions_df['price'] = positions_df.apply(lambda row: prices.get(row['symbol']) if pd.isna(row['price']) else row['price'], axis=1)
 
-# Add value column, eliminate anything below $100, and add notional value column
+# Add value column and equity column
 positions_df['value'] = positions_df['amount'] * positions_df['price']
-positions_df = positions_df[abs(positions_df['value']) >= 100]
 positions_df['equity'] = positions_df.apply(lambda row: row['value'] if row['type'] != 'perp' else 0, axis=1)
 
 # Add columns 'base_asset', 'sector', 'asset_type' from ASSETS_DICT
@@ -117,22 +116,40 @@ positions_df['base_asset'] = positions_df['symbol'].map(lambda x: ASSETS_DICT.ge
 positions_df['sector'] = positions_df['symbol'].map(lambda x: ASSETS_DICT.get(x, {}).get('sector'))
 positions_df['bucket'] = positions_df['symbol'].map(lambda x: ASSETS_DICT.get(x, {}).get('bucket'))
 
-# add notional column
+# Add notional column
 positions_df['notional'] = positions_df.apply(lambda row: abs(row['value']) if row['bucket'] != 'STABLE' else 0, axis=1)
 
-# reorder columns
-positions_df = positions_df[['date', 'wallet_address', 'wallet_id', 'wallet_type', 'position_id', 'strategy', 'chain', 'protocol', 'symbol', 'base_asset', 'sector', 'bucket', 'type', 'amount', 'price', 'value', 'equity', 'notional']]
+# Add cost_basis and change_amount columns
+positions_df['cost_basis'] = 0.0
+positions_df['amount_change'] = 0.0
+
+# Reorder columns
+positions_df = positions_df[['date', 'wallet_address', 'wallet_id', 'wallet_type', 'contract_address', 'position_id', 'strategy', 'chain', 'protocol', 'symbol', 'base_asset', 'sector', 'bucket', 'type', 'amount', 'price', 'value', 'equity', 'notional', 'cost_basis', 'amount_change']]
 
 # Check if the master file exists
-filename = r'C:\Users\JohnRogic\OneDrive - Golden Pear\Shared Documents - GP Research Share Site\John\.Projects\.github\portfolio-dashboard\output\positions_data.xlsx'
-positions_df.to_excel(filename, index=False)
-
 master_file = r'C:\Users\JohnRogic\OneDrive - Golden Pear\Shared Documents - GP Research Share Site\John\.Projects\.github\portfolio-dashboard\output\positions_database.xlsx'
 
 if os.path.exists(master_file):
     # Load the existing master file
     existing_df = pd.read_excel(master_file)
 
+    # Set cost_basis and change_amount based on the previous day's data
+    previous_day = (datetime.now() - timedelta(days=1)).date()
+    previous_day_df = existing_df[existing_df['date'] == previous_day]
+
+    if not previous_day_df.empty:
+        for idx, row in positions_df.iterrows():
+            previous_position = previous_day_df[previous_day_df['position_id'] == row['position_id']]
+            if not previous_position.empty:
+                positions_df.at[idx, 'cost_basis'] = previous_position.iloc[0]['cost_basis']
+                positions_df.at[idx, 'amount_change'] = row['amount'] - previous_position.iloc[0]['amount']
+            else:
+                positions_df.at[idx, 'cost_basis'] = row['value']
+                positions_df.at[idx, 'amount_change'] = row['amount']
+    else:
+        positions_df['cost_basis'] = positions_df['value']
+        positions_df['amount_change'] = positions_df['amount']
+    
     # Append the new data
     combined_df = pd.concat([existing_df, positions_df], ignore_index=True)
 
@@ -140,10 +157,16 @@ if os.path.exists(master_file):
     combined_df.to_excel(master_file, index=False)
 else:
     # If the master file doesn't exist, save the new data as the master file
+    positions_df['cost_basis'] = positions_df['value']
+    positions_df['amount_change'] = positions_df['amount']
     positions_df.to_excel(master_file, index=False)
 
+# Save today's data to a separate file for reference
+filename = r'C:\Users\JohnRogic\OneDrive - Golden Pear\Shared Documents - GP Research Share Site\John\.Projects\.github\portfolio-dashboard\output\positions_data.xlsx'
+positions_df.to_excel(filename, index=False)
+
 # Log script end time
-end_time = datetime.now()
+end_time = datetime.utcnow()
 logging.info("Script completed successfully.")
 logging.info(f"Script started at: {start_time}")
 logging.info(f"Script ended at: {end_time}")
