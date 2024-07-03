@@ -41,7 +41,8 @@ def create_position(wallet: Dict[str, str], position_type: str, symbol: str, mar
         'wallet_address': wallet['address'],
         'wallet_type': wallet['type'],
         'strategy': wallet['strategy'],
-        'position_id': f'dydxv4-{market}-{position_type}',
+        'contract_address': None,
+        'position_id': f"{wallet['id']}-dydx-dydxv4-{position_type}-{symbol}",
         'chain': 'dydx',
         'protocol': 'dydxv4',
         'type': position_type,
@@ -92,7 +93,7 @@ def process_dydxv4_data(dydxv4_data: Dict[str, Any], wallet: Dict[str, str]) -> 
 
                 data.extend([position, funding, collateral])
         else:
-            data.append(create_position(wallet, 'cash', 'hodl', 'USDC', total_equity, 1))
+            data.append(create_position(wallet, 'cash', 'USDC', 'hodl', total_equity, 1))
 
     return data
 
