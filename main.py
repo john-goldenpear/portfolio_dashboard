@@ -4,7 +4,7 @@ import logging
 from datetime import datetime, timedelta
 from config import WALLETS, SOLANA_TOKENS, ASSETS_DICT
 
-from apis.circle import fetch_circle_user_balance
+from apis.circle import fetch_circle_user_balance, fetch_circle_user_deposits, fetch_circle_user_redemptions, fetch_circle_user_transfers
 from apis.gemini import fetch_gemini_user_spot_balances, fetch_gemini_user_perps_balances
 from apis.debank import fetch_debank_user_balances_protocol, fetch_debank_user_balances_tokens
 from apis.relayer import fetch_relayer_positions
@@ -44,7 +44,10 @@ for wallet in WALLETS:
         if wallet_type == 'CIRCLE':
             logging.info('Pulling Circle wallet data')
             positions_raw = fetch_circle_user_balance()
-            positions = process_circle_data(positions_raw, wallet)
+            deposits = fetch_circle_user_deposits()
+            transfers = fetch_circle_user_transfers()
+            redemptions = fetch_circle_user_redemptions()
+            positions = process_circle_data(positions_raw, wallet, deposits, transfers, redemptions)
 
         elif wallet_type == 'GEMINI':
             logging.info('Pulling Gemini wallet data')
@@ -109,7 +112,7 @@ positions_df['price'] = positions_df.apply(lambda row: prices.get(row['symbol'])
 
 # Add value column and equity column
 positions_df['value'] = positions_df['amount'] * positions_df['price']
-positions_df['equity'] = positions_df.apply(lambda row: row['value'] if row['type'] != 'perp' else 0, axis=1)
+positions_df['equity'] = positions_df['equity'].fillna(positions_df['value'])
 
 # Add columns 'base_asset', 'sector', 'asset_type' from ASSETS_DICT
 positions_df['base_asset'] = positions_df['symbol'].map(lambda x: ASSETS_DICT.get(x, {}).get('base_asset'))
@@ -124,10 +127,10 @@ positions_df['cost_basis'] = 0.0
 positions_df['amount_change'] = 0.0
 
 # Reorder columns
-positions_df = positions_df[['date', 'wallet_address', 'wallet_id', 'wallet_type', 'contract_address', 'position_id', 'strategy', 'chain', 'protocol', 'symbol', 'base_asset', 'sector', 'bucket', 'type', 'amount', 'price', 'value', 'equity', 'notional', 'cost_basis', 'amount_change']]
+positions_df = positions_df[['date', 'wallet_address', 'wallet_id', 'wallet_type', 'contract_address', 'position_id', 'strategy', 'chain', 'protocol', 'symbol', 'base_asset', 'sector', 'bucket', 'type', 'amount', 'price', 'value', 'equity', 'notional', 'cost_basis', 'amount_change', 'unrealized_gain', 'realized_gain', 'income_usd']]
 
 # Check if the master file exists
-master_file = r'C:\Users\JohnRogic\OneDrive - Golden Pear\Shared Documents - GP Research Share Site\John\.Projects\.github\portfolio-dashboard\output\positions_database.xlsx'
+master_file = r'C:\Users\JohnRogic\OneDrive - Golden Pear\Shared Documents - GP Research Share Site\John\.Projects\.github\portfolio-dashboard\output\positions_database_test.xlsx'
 
 if os.path.exists(master_file):
     # Load the existing master file
@@ -162,7 +165,7 @@ else:
     positions_df.to_excel(master_file, index=False)
 
 # Save today's data to a separate file for reference
-filename = r'C:\Users\JohnRogic\OneDrive - Golden Pear\Shared Documents - GP Research Share Site\John\.Projects\.github\portfolio-dashboard\output\positions_data.xlsx'
+filename = r'C:\Users\JohnRogic\OneDrive - Golden Pear\Shared Documents - GP Research Share Site\John\.Projects\.github\portfolio-dashboard\output\positions_data_test.xlsx'
 positions_df.to_excel(filename, index=False)
 
 # Log script end time

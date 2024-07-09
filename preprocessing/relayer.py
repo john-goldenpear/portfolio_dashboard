@@ -25,6 +25,8 @@ def process_relayer_portfolio_data(relayer_data, wallet):
     """
     processed_data = []
 
+    
+
     # Extract portfolio data
     portfolio = relayer_data.get('portfolio', {})
     for asset, details in portfolio.items():
@@ -35,7 +37,7 @@ def process_relayer_portfolio_data(relayer_data, wallet):
             'position_id': f"across-relay-{asset}",
             'chain': 'N/A',
             'protocol_id': 'across-relay',
-            'type': 'relaying',
+            'type': 'relay',
             'symbol': asset,
             'amount': details.get('balance', 0) / (10 ** 18),  # Divide by 10^18 for human-readable format
             'price': details.get('price', 0)
@@ -56,6 +58,10 @@ def process_relayer_position_data(relayer_data, wallet):
     """
     processed_data = []
 
+    protocol = 'across relay'
+    position_type = 'hodl' if token == 'nativeToken' else 'relay'
+    symbol = 'ETH' if token == 'nativeToken' else token
+
     # Extract positions data
     positions = relayer_data.get('positions', {})
     for chain_key, tokens in positions.items():
@@ -68,12 +74,12 @@ def process_relayer_position_data(relayer_data, wallet):
                 'wallet_type': wallet['type'],
                 'strategy': wallet['strategy'],
                 'contract_address': None,
-                'position_id': f"{wallet['id']}-{chain}-Across Relay" + '-' + ('hodl' if token == 'nativeToken' else 'relaying') + '-' + ('ETH' if token == 'nativeToken' else token),
+                'position_id': f"{wallet['id']}-{chain}-{protocol}-{position_type}-{symbol}",
                 'chain': chain,
-                'protocol': 'Across-Relay',
-                'type': ('hodl' if token == 'nativeToken' else 'relaying'),
-                'symbol': ('ETH' if token == 'nativeToken' else token),
-                'amount': details.get('balance', 0) / (10 ** 18),  # Divide by 10^18 for human-readable format
+                'protocol': protocol,
+                'type': position_type,
+                'symbol': symbol,
+                'amount': details.get('positionTotal', 0) / (10 ** 18),  # Divide by 10^18 for human-readable format
                 'price': details.get('price', 0)
             })
 

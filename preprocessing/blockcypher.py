@@ -16,16 +16,19 @@ def create_position(wallet: Dict[str, str], amount: float, symbol: str) -> Dict[
     Returns:
         dict: Position dictionary.
     """
+    protocol = 'wallet'
+    position_type = 'hodl'
+
     return {
         'wallet_id': wallet['id'],
         'wallet_address': wallet['address'],
         'wallet_type': wallet['type'],
         'strategy': wallet['strategy'],
         'contract_address': f'{symbol}',
-        'position_id': f"{wallet['id']}-{symbol}-wallet-hodl-{symbol.upper()}",
+        'position_id': f"{wallet['id']}-{symbol}-{protocol}-{position_type}-{symbol.upper()}",
         'chain': f'{symbol}',
-        'protocol': 'wallet',
-        'type': 'hodl',
+        'protocol': protocol,
+        'type': position_type,
         'symbol': f'{symbol.upper()}',
         'amount': amount,
         'price': None  # Price is unknown

@@ -6,7 +6,7 @@ from apis.gemini import fetch_gemini_user_perps_balances, fetch_gemini_user_spot
 
 logging.basicConfig(level=logging.INFO)
 
-def create_position(wallet: Dict[str, str], data_type: str, currency: str, amount: float, price: float) -> Dict[str, Any]:
+def create_position(wallet: Dict[str, str], data_type: str, symbol: str, amount: float, price: float) -> Dict[str, Any]:
     """
     Helper function to create a position dictionary.
 
@@ -20,19 +20,27 @@ def create_position(wallet: Dict[str, str], data_type: str, currency: str, amoun
     Returns:
         dict: Position dictionary.
     """
+    chain = 'gemini'
+    protocol = 'gemini'
+    position_type = 'hodl' if data_type == 'spot' else 'perps'
+
     return {
         'wallet_id': wallet['id'],
         'wallet_address': wallet['address'],
         'wallet_type': wallet['type'],
         'strategy': wallet['strategy'],
         'contract_address': None,
-        'position_id': f"{wallet['id']}-gemini-gemini-" + ('hodl' if data_type == 'spot' else 'perps') + '-' + currency,
-        'chain': 'gemini',
-        'protocol': 'gemini',
-        'type': ('hodl' if data_type == 'spot' else 'perps'),
-        'symbol': currency,
+        'position_id': f"{wallet['id']}-{chain}-{protocol}-{position_type}-{symbol}",
+        'chain': chain,
+        'protocol': protocol,
+        'type': position_type,
+        'symbol': symbol,
         'amount': amount,
-        'price': price
+        'price': price,
+        'opened_qty': None,
+        'closed_qty': None,
+        'opened_price': None,
+        'closed_price': None
     }
 
 def process_gemini_data(data: List[Dict[str, Any]], wallet: Dict[str, str], data_type: str) -> List[Dict[str, Any]]:
@@ -57,7 +65,7 @@ def process_gemini_data(data: List[Dict[str, Any]], wallet: Dict[str, str], data
             processed_position = create_position(
                 wallet=wallet,
                 data_type=data_type,
-                currency=position['currency'],
+                symbol=position['currency'],
                 amount=amount,
                 price=price
             )

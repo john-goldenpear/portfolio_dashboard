@@ -21,7 +21,7 @@ def fetch_dydxv4_address_info(address: str) -> Dict[str, Any]:
     response.raise_for_status()  # Raise an exception for HTTP errors
     return response.json()
 
-def create_position(wallet: Dict[str, str], position_type: str, symbol: str, market: str, amount: float, price: float) -> Dict[str, Any]:
+def create_position(wallet: Dict[str, str], position_type: str, symbol: str, amount: float, price: float) -> Dict[str, Any]:
     """
     Helper function to create a position dictionary.
 
@@ -36,15 +36,18 @@ def create_position(wallet: Dict[str, str], position_type: str, symbol: str, mar
     Returns:
         dict: Position dictionary.
     """
+    chain = 'dydx'
+    protocol = 'dydxV4'
+
     return {
         'wallet_id': wallet['id'],
         'wallet_address': wallet['address'],
         'wallet_type': wallet['type'],
         'strategy': wallet['strategy'],
         'contract_address': None,
-        'position_id': f"{wallet['id']}-dydx-dydxv4-{position_type}-{symbol}",
-        'chain': 'dydx',
-        'protocol': 'dydxv4',
+        'position_id': f"{wallet['id']}-{chain}-{protocol}-{position_type}-{symbol}",
+        'chain': chain,
+        'protocol': protocol,
         'type': position_type,
         'symbol': symbol,
         'amount': amount,
