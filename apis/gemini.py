@@ -1,25 +1,30 @@
-import requests
 import json
 import base64
 import hmac
 import time
 import hashlib
+import logging
+from typing import Dict, Any
+from apis.utils import fetch_with_retries
 from config import GEMINI_SPOT_API_KEY, GEMINI_SPOT_API_SECRET, GEMINI_PERPS_API_KEY, GEMINI_PERPS_API_SECRET
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 # Define constants locally within the module
 GEMINI_BASE_URL = 'https://api.gemini.com/v1/'
 
-def generate_signature(api_key, api_secret, payload):
+def generate_signature(api_key: str, api_secret: str, payload: Dict[str, Any]) -> Dict[str, str]:
     """
     Generate the signature and headers for a Gemini API request.
 
     Args:
         api_key (str): The API key.
         api_secret (str): The API secret.
-        payload (dict): The payload to be included in the request.
+        payload (Dict[str, Any]): The payload to be included in the request.
 
     Returns:
-        dict: The headers for the API request.
+        Dict[str, str]: The headers for the API request.
     """
     gemini_api_secret = api_secret.encode()
     encoded_payload = json.dumps(payload).encode()
@@ -36,148 +41,154 @@ def generate_signature(api_key, api_secret, payload):
     }
     return headers
 
-def fetch_data(endpoint, headers, params=None):
+def fetch_data(endpoint: str, headers: Dict[str, str], params: Dict[str, Any] = None) -> Dict[str, Any]:
     """
-    Fetch data from the Gemini API.
+    Fetch data from the Gemini API using the POST method.
 
     Args:
         endpoint (str): The API endpoint to request.
-        headers (dict): The headers for the API request.
-        params (dict, optional): Query parameters to include in the request.
+        headers (Dict[str, str]): The headers for the API request.
+        params (Dict[str, Any], optional): Query parameters to include in the request.
 
     Returns:
-        dict: The JSON response from the API.
+        Dict[str, Any]: The JSON response from the API.
     
     Raises:
         requests.exceptions.HTTPError: If the request returns an unsuccessful status code.
     """
     url = f"{GEMINI_BASE_URL}{endpoint}"
-    print(f"URL: {url}")
-    print(f"Headers: {headers}")
-    if params:
-        print(f"Params: {params}")
-    try:
-        response = requests.post(url, headers=headers, params=params)
-        response.raise_for_status()  # Raise an HTTPError for bad responses
-        return response.json()
-    except requests.exceptions.HTTPError as e:
-        print(f"HTTP error occurred: {e}")
-        print(f"Response: {response.text}")
-        raise
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        raise
-    
-def fetch_gemini_user_spot_balances():
+    return fetch_with_retries(url, headers, params, method='POST')
+
+def fetch_gemini_user_spot_balances() -> Dict[str, Any]:
     """
-    Fetch balances for the perpetual futures market from the Gemini API.
+    Fetch balances for the spot market from the Gemini API.
 
     Returns:
-        dict: The JSON response containing the balances.
+        Dict[str, Any]: The JSON response containing the balances.
     """
     payload_nonce = int(time.time() * 1000)
     payload = {"request": "/v1/notionalbalances/usd", "nonce": payload_nonce}
     headers = generate_signature(GEMINI_SPOT_API_KEY, GEMINI_SPOT_API_SECRET, payload)
-    return fetch_data("notionalbalances/usd", headers)
+    return fetch_data("notionalbalances/usd", headers, payload)
 
-def fetch_gemini_user_spot_transactions():
+def fetch_gemini_user_spot_transactions() -> Dict[str, Any]:
     """
     Fetch transactions for the spot market from the Gemini API.
 
     Returns:
-        dict: The JSON response containing the balances.
+        Dict[str, Any]: The JSON response containing the transactions.
     """
     payload_nonce = int(time.time() * 1000)
     payload = {"request": "/v1/mytrades", "nonce": payload_nonce}
     headers = generate_signature(GEMINI_SPOT_API_KEY, GEMINI_SPOT_API_SECRET, payload)
-    return fetch_data("mytrades", headers)
+    return fetch_data("mytrades", headers, payload)
 
-def fetch_gemini_user_spot_transfers():
+def fetch_gemini_user_spot_transfers() -> Dict[str, Any]:
     """
     Fetch transfers for the spot account from the Gemini API.
 
     Returns:
-        dict: The JSON response containing the balances.
+        Dict[str, Any]: The JSON response containing the transfers.
     """
     payload_nonce = int(time.time() * 1000)
     payload = {"request": "/v1/transfers", "nonce": payload_nonce}
     headers = generate_signature(GEMINI_SPOT_API_KEY, GEMINI_SPOT_API_SECRET, payload)
-    return fetch_data("transfers", headers)
+    return fetch_data("transfers", headers, payload)
 
-def fetch_gemini_user_spot_custody_fees():
+def fetch_gemini_user_spot_custody_fees() -> Dict[str, Any]:
     """
     Fetch custody fees for the spot account from the Gemini API.
 
     Returns:
-        dict: The JSON response containing the balances.
+        Dict[str, Any]: The JSON response containing the custody fees.
     """
     payload_nonce = int(time.time() * 1000)
     payload = {"request": "/v1/custodyaccountfees", "nonce": payload_nonce}
     headers = generate_signature(GEMINI_SPOT_API_KEY, GEMINI_SPOT_API_SECRET, payload)
-    return fetch_data("custodyaccountfees", headers)
+    return fetch_data("custodyaccountfees", headers, payload)
 
-def fetch_gemini_user_perps_balances():
+def fetch_gemini_user_perps_account_balance() -> Dict[str, Any]:
     """
-    Fetch balances for the perpetual futures market from the Gemini API.
+    Fetch perpetual account balance from the Gemini API.
 
     Returns:
-        dict: The JSON response containing the balances.
+        Dict[str, Any]: The JSON response containing the balances.
     """
     payload_nonce = int(time.time() * 1000)
     payload = {"request": "/v1/notionalbalances/usd", "nonce": payload_nonce}
     headers = generate_signature(GEMINI_PERPS_API_KEY, GEMINI_PERPS_API_SECRET, payload)
-    return fetch_data("notionalbalances/usd", headers)
+    return fetch_data("notionalbalances/usd", headers, payload)
 
-def fetch_gemini_user_perps_transactions():
+def fetch_gemini_user_perps_positions() -> Dict[str, Any]:
+    """
+    Fetch balances for the perpetual futures market from the Gemini API.
+
+    Returns:
+        Dict[str, Any]: The JSON response containing the balances.
+    """
+    payload_nonce = int(time.time() * 1000)
+    payload = {"request": "/v1/positions", "nonce": payload_nonce}
+    headers = generate_signature(GEMINI_PERPS_API_KEY, GEMINI_PERPS_API_SECRET, payload)
+    return fetch_data("positions", headers, payload)
+
+def fetch_gemini_user_perps_transactions() -> Dict[str, Any]:
     """
     Fetch transactions for the perpetual futures market from the Gemini API.
 
     Returns:
-        dict: The JSON response containing the balances.
+        Dict[str, Any]: The JSON response containing the transactions.
     """
     payload_nonce = int(time.time() * 1000)
     payload = {"request": "/v1/mytrades", "nonce": payload_nonce}
     headers = generate_signature(GEMINI_PERPS_API_KEY, GEMINI_PERPS_API_SECRET, payload)
-    return fetch_data("mytrades", headers)
+    return fetch_data("mytrades", headers, payload)
 
-def fetch_gemini_user_perps_transfers():
+def fetch_gemini_user_perps_transfers() -> Dict[str, Any]:
     """
     Fetch transfers for the perpetual futures account from the Gemini API.
 
     Returns:
-        dict: The JSON response containing the balances.
+        Dict[str, Any]: The JSON response containing the transfers.
     """
     payload_nonce = int(time.time() * 1000)
     payload = {"request": "/v1/transfers", "nonce": payload_nonce}
     headers = generate_signature(GEMINI_PERPS_API_KEY, GEMINI_PERPS_API_SECRET, payload)
-    return fetch_data("transfers", headers)
+    return fetch_data("transfers", headers, payload)
 
 # Example usage (This section can be commented out or removed in production)
 if __name__ == "__main__":
-    # Fetch balances for the spot market
-    spot_balances = fetch_gemini_user_spot_balances()
-    print('Spot Balances:', spot_balances)
+    try:
+        # Fetch balances for the spot market
+        spot_balances = fetch_gemini_user_spot_balances()
+        logging.info(f'Spot Balances: {spot_balances}')
 
-    # Fetch transactions for the spot market
-    spot_transactions = fetch_gemini_user_spot_transactions()
-    print('Spot Transactions:', spot_transactions)
+        # Fetch transactions for the spot market
+        spot_transactions = fetch_gemini_user_spot_transactions()
+        logging.info(f'Spot Transactions: {spot_transactions}')
 
-    # Fetch transfers for the spot account
-    spot_transfers = fetch_gemini_user_spot_transfers()
-    print('Spot Transfers:', spot_transfers)
+        # Fetch transfers for the spot account
+        spot_transfers = fetch_gemini_user_spot_transfers()
+        logging.info(f'Spot Transfers: {spot_transfers}')
 
-    # Fetch custody fees for the spot account
-    spot_custody_fees = fetch_gemini_user_spot_custody_fees()
-    print('Spot Custody Fees:', spot_custody_fees)
+        # Fetch custody fees for the spot account
+        spot_custody_fees = fetch_gemini_user_spot_custody_fees()
+        logging.info(f'Spot Custody Fees: {spot_custody_fees}')
 
-    # Fetch balances for the perpetual futures market
-    perps_balances = fetch_gemini_user_perps_balances()
-    print('Perpetual Futures Balances:', perps_balances)
+        # Fetch details for the perpetual futures account
+        perps_balance = fetch_gemini_user_perps_account_balance()
+        logging.info(f'Perpetual Futures Positions: {perps_balance}')
+        
+        # Fetch balances for the perpetual futures market
+        perps_positions = fetch_gemini_user_perps_positions()
+        logging.info(f'Perpetual Futures Positions: {perps_positions}')
 
-    # Fetch transactions for the perpetual futures market
-    perps_transactions = fetch_gemini_user_perps_transactions()
-    print('Perpetual Futures Transactions:', perps_transactions)
+        # Fetch transactions for the perpetual futures market
+        perps_transactions = fetch_gemini_user_perps_transactions()
+        logging.info(f'Perpetual Futures Transactions: {perps_transactions}')
 
-    # Fetch transfers for the perpetual futures account
-    perps_transfers = fetch_gemini_user_perps_transfers()
-    print('Perpetual Futures Transfers:', perps_transfers)
+        # Fetch transfers for the perpetual futures account
+        perps_transfers = fetch_gemini_user_perps_transfers()
+        logging.info(f'Perpetual Futures Transfers: {perps_transfers}')
+
+    except Exception as e:
+        logging.error(f"An error occurred during the example usage: {e}")

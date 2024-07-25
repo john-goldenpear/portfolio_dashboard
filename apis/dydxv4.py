@@ -1,4 +1,11 @@
 import requests
+import logging
+from typing import Dict, Any, Optional
+
+from apis.utils import fetch_with_retries
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 DYDXV4_BASE_URL = 'https://indexer.dydx.trade/v4'
 DYDXV4_HEADERS = {
@@ -6,80 +13,65 @@ DYDXV4_HEADERS = {
     'Content-Type': 'application/json'
 }
 
-def fetch_data(endpoint, params=None):
+def fetch_data(endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     Fetch data from the dydx V4 Indexer API.
 
     Args:
         endpoint (str): The API endpoint to request.
-        headers (dict): The headers for the API request.
-        params (dict, optional): Query parameters to include in the request.
+        params (Dict[str, Any], optional): Query parameters to include in the request.
 
     Returns:
-        dict: The JSON response from the API.
+        Dict[str, Any]: The JSON response from the API.
     
     Raises:
         requests.exceptions.HTTPError: If the request returns an unsuccessful status code.
     """
     url = f"{DYDXV4_BASE_URL}/{endpoint}"
-    print(f"URL: {url}")
-    print(f"Headers: {DYDXV4_HEADERS}")
-    if params:
-        print(f"Params: {params}")
-    try:
-        response = requests.get(url, headers=DYDXV4_HEADERS, params=params)  # Use GET for fetching data
-        response.raise_for_status()  # Raise an HTTPError for bad responses
-        return response.json()
-    except requests.exceptions.HTTPError as e:
-        print(f"HTTP error occurred: {e}")
-        print(f"Response: {response.text}")
-        raise
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        raise
+    return fetch_with_retries(url, headers=DYDXV4_HEADERS, params=params)
 
-def fetch_dydxv4_address_info(address):
+def fetch_dydxv4_address_info(address: str) -> Dict[str, Any]:
     """
-    Fetch dydx v4 account info for ethereum address from dydx v4 indexer API.
-    This includes current positions and other information.
+    Fetch dydx v4 account info for an Ethereum address from the dydx v4 indexer API.
+
+    Args:
+        address (str): The Ethereum address to fetch information for.
 
     Returns:
-        dict: The JSON response containing the information.
+        Dict[str, Any]: The JSON response containing the information.
     """
     return fetch_data(f'addresses/{address}')
 
-def fetch_dydxv4_user_assets(address, subaccount_number=0):
+def fetch_dydxv4_user_assets(address: str, subaccount_number: int = 0) -> Dict[str, Any]:
     """
     Fetch asset positions from the dYdX V4 Indexer API.
 
     Args:
-        address (str, optional): The address to filter trades.
-        subaccount_number (int): The subaccount number to filter trades.
+        address (str): The address to filter trades.
+        subaccount_number (int, optional): The subaccount number to filter trades. Defaults to 0.
 
     Returns:
-        dict: The JSON response containing the trades.
+        Dict[str, Any]: The JSON response containing the asset positions.
     """
     params = {
         'address': address,
         'subaccountNumber': subaccount_number
     }
-    # Remove keys with None values
-    params = {k: v for k, v in params.items() if v is not None}
-    return fetch_data(f'assetPositions', params)
+    return fetch_data('assetPositions', params)
 
-def fetch_dydxv4_user_trades(address, subaccount_number=0, market=None, market_type=None, limit=None):
+def fetch_dydxv4_user_trades(address: str, subaccount_number: int = 0, market: Optional[str] = None, market_type: Optional[str] = None, limit: Optional[int] = None) -> Dict[str, Any]:
     """
     Fetch trades from the dYdX V4 Indexer API.
 
     Args:
-        address (str, optional): The address to filter trades.
-        subaccount_number (int): The subaccount number to filter trades.
+        address (str): The address to filter trades.
+        subaccount_number (int, optional): The subaccount number to filter trades. Defaults to 0.
         market (str, optional): The market identifier.
-        market_type (str, optional): The market type ('PERPETUAL' or 'SPOT')... Doesn't seem to be working in example.
+        market_type (str, optional): The market type ('PERPETUAL' or 'SPOT').
         limit (int, optional): The limit on the number of trades to fetch.
 
     Returns:
-        dict: The JSON response containing the trades.
+        Dict[str, Any]: The JSON response containing the trades.
     """
     params = {
         'address': address,
@@ -88,11 +80,9 @@ def fetch_dydxv4_user_trades(address, subaccount_number=0, market=None, market_t
         'marketType': market_type,
         'limit': limit
     }
-    # Remove keys with None values
-    params = {k: v for k, v in params.items() if v is not None}
-    return fetch_data(f'fills', params)
+    return fetch_data('fills', params)
 
-def fetch_dydxv4_user_rewards(address, limit=None):
+def fetch_dydxv4_user_rewards(address: str, limit: Optional[int] = None) -> Dict[str, Any]:
     """
     Fetch trading rewards from the dYdX V4 Indexer API.
 
@@ -101,49 +91,45 @@ def fetch_dydxv4_user_rewards(address, limit=None):
         limit (int, optional): The limit on the number of trading reward records to fetch.
 
     Returns:
-        dict: The JSON response containing the trades.
+        Dict[str, Any]: The JSON response containing the trading rewards.
     """
     params = {
         'limit': limit
     }
-    # Remove keys with None values
-    params = {k: v for k, v in params.items() if v is not None}
     return fetch_data(f'historicalBlockTradingRewards/{address}', params)
 
-def fetch_dydxv4_user_transfers(address, subaccount=0, limit=None):
+def fetch_dydxv4_user_transfers(address: str, subaccount: int = 0, limit: Optional[int] = None) -> Dict[str, Any]:
     """
-    Fetch withdrawals and deposits for address and subaccount from the dYdX V4 Indexer API.
+    Fetch withdrawals and deposits for an address and subaccount from the dYdX V4 Indexer API.
 
     Args:
         address (str): The dydx wallet address.
-        subaccount_number (int): The subaccount number to pull transfers.
+        subaccount (int, optional): The subaccount number to pull transfers. Defaults to 0.
         limit (int, optional): The limit on the number of records to fetch.
 
     Returns:
-        dict: The JSON response containing the trades.
+        Dict[str, Any]: The JSON response containing the transfers.
     """
     params = {
         'address': address,
         'subaccountNumber': subaccount,
         'limit': limit
     }
-    # Remove keys with None values
-    params = {k: v for k, v in params.items() if v is not None}
-    return fetch_data(f'transfers', params)
+    return fetch_data('transfers', params)
 
-def fetch_dydxv4_user_pnl(address, subaccount=0, limit=None, start_date=None, end_date=None):
+def fetch_dydxv4_user_pnl(address: str, subaccount: int = 0, limit: Optional[int] = None, start_date: Optional[str] = None, end_date: Optional[str] = None) -> Dict[str, Any]:
     """
-    Fetch historical pnl for address and subaccount from the dYdX V4 Indexer API.
+    Fetch historical PnL for an address and subaccount from the dYdX V4 Indexer API.
 
     Args:
         address (str): The dydx wallet address.
-        subaccount_number (int): The subaccount number to pull pnl.
-        limit (int, optional): The limit on the number of pnl records to fetch.
-        start_date (IsoString, optional): the date for which pnl record prior to this date are ignored.
-        end_date (IsoString, optional): the date for which pnl record after to this date are ignored.
+        subaccount (int, optional): The subaccount number to pull PnL. Defaults to 0.
+        limit (int, optional): The limit on the number of PnL records to fetch.
+        start_date (str, optional): The date for which PnL records prior to this date are ignored.
+        end_date (str, optional): The date for which PnL records after this date are ignored.
 
     Returns:
-        dict: The JSON response containing the trades.
+        Dict[str, Any]: The JSON response containing the PnL.
     """
     params = {
         'address': address,
@@ -152,10 +138,34 @@ def fetch_dydxv4_user_pnl(address, subaccount=0, limit=None, start_date=None, en
         'createdBeforeOrAt': start_date,
         'createdOnOrAfter': end_date
     }
-    # Remove keys with None values
-    params = {k: v for k, v in params.items() if v is not None}
-    return fetch_data(f'historical-pnl', params)
+    return fetch_data('historical-pnl', params)
 
+def fetch_dydxv4_perpetual_positions(address: str, subaccount_number: int = 0, market: Optional[str] = None, limit: Optional[int] = None, created_before_or_at: Optional[str] = None, created_on_or_after: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Fetch perpetual positions from the dYdX V4 Indexer API.
+
+    Args:
+        address (str): The dydx wallet address.
+        subaccount_number (int, optional): The subaccount number. Defaults to 0.
+        market (str, optional): The market identifier.
+        limit (int, optional): The limit on the number of positions to fetch.
+        created_before_or_at (str, optional): Fetch positions created before or at this timestamp.
+        created_on_or_after (str, optional): Fetch positions created on or after this timestamp.
+
+    Returns:
+        Dict[str, Any]: The JSON response containing the perpetual positions.
+    """
+    params = {
+        'address': address,
+        'subaccountNumber': subaccount_number,
+        'market': market,
+        'limit': limit,
+        'createdBeforeOrAt': created_before_or_at,
+        'createdOnOrAfter': created_on_or_after
+    }
+    return fetch_data('perpetualPositions', params)
+
+# Example usage
 if __name__ == "__main__":
     try:
         address = 'dydx1apl362xyztk6kg6kujnlashx8zsjlkcxnv4uud'  # Replace with your actual address
@@ -184,5 +194,9 @@ if __name__ == "__main__":
         pnl = fetch_dydxv4_user_pnl(address, subaccount=0, limit=10, start_date='2024-01-01T00:00:00Z', end_date='2024-12-31T23:59:59Z')
         print('Historical PnL:', pnl)
 
+        # Fetch and print perpetual positions
+        perpetual_positions = fetch_dydxv4_perpetual_positions(address, subaccount_number=0, market=None, limit=10)
+        print('Perpetual Positions:', perpetual_positions)
+
     except Exception as e:
-        print(f"An error occurred during the example usage: {e}")
+        logging.error(f"An error occurred during the example usage: {e}")

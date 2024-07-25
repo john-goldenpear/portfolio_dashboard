@@ -3,25 +3,19 @@ from typing import List, Dict, Any
 
 logging.basicConfig(level=logging.INFO)
 
-# Assuming SOLANA_TOKENS is imported or defined elsewhere in the module
-# SOLANA_TOKENS = [{'address': 'some_address', 'symbol': 'some_symbol'}, ...]
-
 def create_position(wallet: Dict[str, str], position_id: str, symbol: str, amount: float, price: float) -> Dict[str, Any]:
     """
     Helper function to create a position dictionary.
 
     Args:
-        wallet (dict): Wallet information.
+        wallet (Dict[str, str]): Wallet information.
         position_id (str): Position ID.
-        chain (str): Blockchain chain.
-        protocol_id (str): Protocol ID.
-        position_type (str): Type of position (e.g., 'wallet', 'supply', 'borrow', 'reward').
         symbol (str): Symbol of the asset.
         amount (float): Amount of the asset.
         price (float): Price of the asset.
 
     Returns:
-        dict: Position dictionary.
+        Dict[str, Any]: Position dictionary.
     """
     chain = 'sol'
     protocol = 'wallet'
@@ -48,7 +42,7 @@ def get_symbol_from_address(token_address: str, token_list: List[Dict[str, str]]
 
     Args:
         token_address (str): The token address.
-        token_list (list): The list of token dictionaries with 'address' and 'symbol' keys.
+        token_list (List[Dict[str, str]]): The list of token dictionaries with 'address' and 'symbol' keys.
 
     Returns:
         str: The token symbol or None if not found.
@@ -63,11 +57,11 @@ def process_solana_data(wallet: Dict[str, str], balance_data: Dict[str, Any]) ->
     Process Solana native balance data for a single wallet.
 
     Args:
-        wallet (dict): Wallet information.
-        balance_data (dict): Raw balance data from the Solana API.
+        wallet (Dict[str, str]): Wallet information.
+        balance_data (Dict[str, Any]): Raw balance data from the Solana API.
 
     Returns:
-        list: Processed balance data with wallet information included.
+        List[Dict[str, Any]]: Processed balance data with wallet information included.
     """
     all_data = []
     try:
@@ -92,12 +86,12 @@ def process_solana_token_data(wallet: Dict[str, str], token_positions_data: List
     Process Solana token accounts data for a single wallet.
 
     Args:
-        wallet (dict): Wallet information.
-        token_positions_data (list): Raw token accounts data from the Solana API.
-        token_list (list): List of token dictionaries with 'address' and 'symbol' keys.
+        wallet (Dict[str, str]): Wallet information.
+        token_positions_data (List[Dict[str, Any]]): Raw token accounts data from the Solana API.
+        token_list (List[Dict[str, str]]): List of token dictionaries with 'address' and 'symbol' keys.
 
     Returns:
-        list: Processed token data with wallet information included.
+        List[Dict[str, Any]]: Processed token data with wallet information included.
     """
     all_data = []
     try:
@@ -124,3 +118,23 @@ def process_solana_token_data(wallet: Dict[str, str], token_positions_data: List
         logging.error(f"Unexpected error: {e} in processing token account data")
 
     return all_data
+
+# Example usage
+if __name__ == "__main__":
+    wallet = {'id': 'XXXX', 'address': 'AVzP2GeRmqGphJsMxWoqjpUifPpCret7LqWhD8NWQK49', 'type': 'sol', 'strategy': 'Quality'}
+    try:
+        from apis.solana import fetch_solana_user_balance, fetch_solana_user_token_balances
+        from config import SOLANA_TOKENS
+        
+        # Fetch and process SOL balance
+        balance_data = fetch_solana_user_balance(wallet['address'])
+        sol_data = process_solana_data(wallet, balance_data)
+        logging.info(f"Processed SOL Data: {sol_data}")
+
+        # Fetch and process SOL token accounts
+        token_positions_data = fetch_solana_user_token_balances(wallet['address'])
+        token_data = process_solana_token_data(wallet, token_positions_data, SOLANA_TOKENS)
+        logging.info(f"Processed SOL Token Data: {token_data}")
+
+    except Exception as e:
+        logging.error(f"Error processing data for wallet {wallet['address']}: {e}")

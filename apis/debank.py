@@ -1,47 +1,39 @@
 import requests
+import logging
 import time
+from typing import Dict, Any, List, Optional
+from apis.utils import fetch_with_retries
 from config import DEBANK_API_KEY
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 # Define constants locally within the module
 DEBANK_BASE_URL = 'https://pro-openapi.debank.com/v1/'
 DEBANK_HEADERS = {
     'accept': 'application/json',
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'AccessKey': DEBANK_API_KEY
 }
 
-def fetch_data(endpoint, params=None):
+def fetch_data(endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     Fetch data from the DeBank API.
 
     Args:
         endpoint (str): The API endpoint to request.
-        params (dict, optional): Query parameters to include in the request.
+        params (Optional[Dict[str, Any]]): Query parameters to include in the request.
 
     Returns:
-        dict: The JSON response from the API.
+        Dict[str, Any]: The JSON response from the API.
     
     Raises:
         requests.exceptions.HTTPError: If the request returns an unsuccessful status code.
     """
     url = f"{DEBANK_BASE_URL}{endpoint}"
-    headers = {
-        **DEBANK_HEADERS,
-        'AccessKey': DEBANK_API_KEY
-    }
-    print(f"Fetching data from {url} with params {params}")
-    try:
-        response = requests.get(url, headers=headers, params=params)
-        response.raise_for_status()  # Raise an HTTPError for bad responses
-        return response.json()
-    except requests.exceptions.HTTPError as e:
-        print(f"HTTP error occurred: {e}")
-        print(f"Response: {response.text}")
-        raise
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        raise
+    return fetch_with_retries(url, DEBANK_HEADERS, params)
 
-def fetch_debank_user_balances_protocol(user_id):
+def fetch_debank_user_balances_protocol(user_id: str) -> Dict[str, Any]:
     """
     Fetch all complex protocols for a user from DeBank API.
 
@@ -49,12 +41,12 @@ def fetch_debank_user_balances_protocol(user_id):
         user_id (str): The user's ID.
 
     Returns:
-        dict: The JSON response containing the user's protocols.
+        Dict[str, Any]: The JSON response containing the user's protocols.
     """
     endpoint = f"user/all_complex_protocol_list?id={user_id}"
     return fetch_data(endpoint)
 
-def fetch_debank_user_balances_tokens(user_id):
+def fetch_debank_user_balances_tokens(user_id: str) -> Dict[str, Any]:
     """
     Fetch all tokens for a user from DeBank API.
 
@@ -62,12 +54,12 @@ def fetch_debank_user_balances_tokens(user_id):
         user_id (str): The user's wallet address.
 
     Returns:
-        dict: The JSON response containing the user's tokens.
+        Dict[str, Any]: The JSON response containing the user's tokens.
     """
     endpoint = f"user/all_token_list?id={user_id}"
     return fetch_data(endpoint)
 
-def fetch_debank_user_transactions_one_page(user_id, end_time, page_count=20, chain_ids=None):
+def fetch_debank_user_transactions_one_page(user_id: str, end_time: int, page_count: int = 20, chain_ids: Optional[List[str]] = None) -> List[Dict[str, Any]]:
     """
     Fetch the transaction history for a user on all supported chains from DeBank API.
 
@@ -75,10 +67,10 @@ def fetch_debank_user_transactions_one_page(user_id, end_time, page_count=20, ch
         user_id (str): The user's address.
         end_time (int): Timestamp to return transactions earlier than this time.
         page_count (int): Number of entries to return (maximum 20).
-        chain_ids (list of str, optional): List of chain IDs to filter the transactions.
+        chain_ids (Optional[List[str]]): List of chain IDs to filter the transactions.
 
     Returns:
-        dict: The JSON response containing the user's transaction history.
+        List[Dict[str, Any]]: A list of transactions for the cryptocurrency address.
     """
     endpoint = "user/all_history_list"
     params = {
@@ -87,25 +79,22 @@ def fetch_debank_user_transactions_one_page(user_id, end_time, page_count=20, ch
         'page_count': page_count,
         'chain_ids': ','.join(chain_ids) if chain_ids else None
     }
-    # Remove keys with None values
-    params = {k: v for k, v in params.items() if v is not None}
-    response = fetch_data(endpoint, params)
-    return response.get('history_list', [])
+    return fetch_data(endpoint, params).get('history_list', [])
 
-def fetch_debank_user_transactions(user_id, end_time=int(time.time()), start_time=0, page_count=20, chain_ids=None):
+def fetch_debank_user_transactions(user_id: str, end_time: int = int(time.time()), start_time: int = 0, page_count: int = 20, chain_ids: Optional[List[str]] = None) -> List[Dict[str, Any]]:
     """
     Fetch all transactions for a user between start_time and end_time. 
-    Defaults to entire transaction history
+    Defaults to entire transaction history.
 
     Args:
         user_id (str): The user's address.
-        end_time (int, optional): Timestamp to stop fetching transactions; returns transactions later than this time. Defaults to the time that the function is run
-        start_time (int, optional): Timestamp to start fetching transactions; returns transactions earlier than this time; Defaults to beginning of time
+        end_time (int, optional): Timestamp to stop fetching transactions; returns transactions later than this time. Defaults to the time that the function is run.
+        start_time (int, optional): Timestamp to start fetching transactions; returns transactions earlier than this time; Defaults to beginning of time.
         page_count (int, optional): Number of entries per page (maximum 20). Default is 20.
-        chain_ids (list of str, optional): List of chain IDs to filter the transactions.
+        chain_ids (Optional[List[str]]): List of chain IDs to filter the transactions.
 
     Returns:
-        list: A list of all transactions within the specified time range.
+        List[Dict[str, Any]]: A list of all transactions within the specified time range.
     """
     all_transactions = []
     current_end_time = end_time
@@ -125,26 +114,29 @@ def fetch_debank_user_transactions(user_id, end_time=int(time.time()), start_tim
         # Sleep to avoid hitting API rate limits (adjust as needed)
         time.sleep(1)
 
-    return [tx for tx in all_transactions]
+    return all_transactions
 
 # Example usage (This section can be commented out or removed in production)
 if __name__ == "__main__":
-    user_id = '0x2aF2A6f692231e394b48B701AFCe9f5CC2081AB4'
+    user_id = '0x4a4e392290a382c9d2754e5dca8581ea1893db5d'
 
-    # Example usage of fetch_protocols function
-    protocols = fetch_debank_user_balances_tokens(user_id)
-    print('User Protocol Data:', protocols)
+    try:
+        # Example usage of fetch_protocols function
+        protocols = fetch_debank_user_balances_protocol(user_id)
+        logging.info('User Protocol Data:', protocols)
 
-    # Example usage of fetch_tokens function
-    tokens = fetch_debank_user_balances_tokens(user_id)
-    print('User Token Data:', tokens)
+        # Example usage of fetch_tokens function
+        tokens = fetch_debank_user_balances_tokens(user_id)
+        logging.info('User Token Data:', tokens)
 
-    # Example usage of fetch_transactions_latest function
-    transactions_latest = fetch_debank_user_transactions_one_page(user_id, end_time=1717417366, page_count=10, chain_ids=['eth', 'bsc'])
-    print('Latest Transactions (up to 20 txs):', transactions_latest)
+        # Example usage of fetch_transactions_latest function
+        transactions_latest = fetch_debank_user_transactions_one_page(user_id, end_time=1721926341, page_count=10)
+        logging.info('Latest Transactions (up to 20 txs):', transactions_latest)
 
-    # Example usage of fetch_transactions function
-    start_time = 1712233366  # Example start timestamp (e.g., April 4, 2024)
-    end_time = 1717417366    # Example end timestamp (e.g., June 3, 2024)
-    transactions = fetch_debank_user_transactions(user_id, end_time, start_time, page_count=20, chain_ids=['eth', 'bsc'])
-    print('All User Transactions from April 4, 2024 to June 3, 2024 on eth and bsc chains:', transactions)
+        # Example usage of fetch_transactions function
+        start_time = 1712233366  # Example start timestamp (e.g., April 4, 2024)
+        end_time = 1717417366    # Example end timestamp (e.g., June 3, 2024)
+        transactions = fetch_debank_user_transactions(user_id, end_time, start_time, page_count=20, chain_ids=['eth', 'bsc'])
+        logging.info('All User Transactions from April 4, 2024 to June 3, 2024 on eth and bsc chains:', transactions)
+    except Exception as e:
+        logging.error(f"An error occurred during the example usage: {e}")

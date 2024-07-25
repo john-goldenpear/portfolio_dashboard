@@ -10,20 +10,19 @@ def create_position(wallet: Dict[str, str], position_type: str, symbol: str, amo
     Helper function to create a position dictionary.
 
     Args:
-        wallet (dict): Wallet information.
-        market (str): Market symbol.
+        wallet (Dict[str, str]): Wallet information.
         position_type (str): Type of position (e.g., 'perps', 'funding', 'collateral').
         symbol (str): Symbol of the asset.
         amount (float): Amount of the asset.
         price (float): Price of the asset.
-        equity (float):
-        cost_basis (float):
-        income_usd (float):
-        unrealized_pnl (float):
-        realized_pnl (float):
+        equity (float): Equity value of the asset.
+        cost_basis (float): Cost basis of the asset.
+        unrealized_pnl (float): Unrealized P&L of the asset.
+        realized_pnl (float): Realized P&L of the asset.
+        income_usd (float): Income in USD.
 
     Returns:
-        dict: Position dictionary.
+        Dict[str, Any]: Position dictionary.
     """
     chain = 'starkware'
     protocol = 'dydxV3'
@@ -51,8 +50,14 @@ def create_position(wallet: Dict[str, str], position_type: str, symbol: str, amo
 def process_dydxv3_data(dydxv3_data: Dict[str, Any], wallet: Dict[str, str]) -> List[Dict[str, Any]]:
     """
     Process dydxv3 data to extract and structure relevant information.
+
+    Args:
+        dydxv3_data (Dict[str, Any]): Data from the dydxv3 API.
+        wallet (Dict[str, str]): Dictionary containing wallet information.
+
+    Returns:
+        List[Dict[str, Any]]: Processed data with wallet information included.
     """
-    
     data = []
 
     total_equity = float(dydxv3_data['account'].get('equity', 0))
@@ -82,9 +87,7 @@ def process_dydxv3_data(dydxv3_data: Dict[str, Any], wallet: Dict[str, str]) -> 
             equity = collateral_attribution * total_equity
 
             position = create_position(wallet, 'perps', symbol, amount, price, equity, cost_basis, unrealized_pnl, realized_pnl, income_usd)
-            
             data.append(position)
-
     else:
         data.append(create_position(wallet, 'cash', 'USDC', total_equity, 1, total_equity, 0, 0, 0, 0))
 
@@ -98,7 +101,6 @@ def process_dydxv3_data(dydxv3_data: Dict[str, Any], wallet: Dict[str, str]) -> 
             unrealized_pnl = 0.0
             price = 0.0
             cost_basis = 0.0
-            position_value = 0.0
             income_usd = float(position['netFunding'])
             symbol = position['market'].split('-')[0]  # Extract symbol from market (e.g., 'BTC-USD' -> 'BTC')
             realized_pnl = float(position['realizedPnl']) - float(position['netFunding'])
@@ -110,25 +112,29 @@ def process_dydxv3_data(dydxv3_data: Dict[str, Any], wallet: Dict[str, str]) -> 
     return data
 
 if __name__ == "__main__":
-    from config import DYDXV3_API_KEY_2, DYDXV3_API_SECRET_2, DYDXV3_API_PASSPHRASE_2
-    ETHEREUM_ADDRESS = 'TEST ADDRESS'
+    from config import WALLETS
+    wallet = WALLETS[6]
+    key = wallet.get('dydxv3_key')
+    secret = wallet.get('dydxv3_secret')
+    passphrase = wallet.get('dydxv3_phrase')
+    eth_address = wallet.get('address')
     
     # Initialize the client
     client = dydxClient(
-        api_key=DYDXV3_API_KEY_2,
-        api_secret=DYDXV3_API_SECRET_2,
-        api_passphrase=DYDXV3_API_PASSPHRASE_2,
-        ethereum_address=ETHEREUM_ADDRESS
+        api_key=key,
+        api_secret=secret,
+        api_passphrase=passphrase,
+        ethereum_address=eth_address
     )
 
     # Fetch dYdX account information
     account_info = client.get_account_info()
-    print('Account Information:', account_info)
+    logging.info('Account Information:', account_info)
 
     # Process the dYdX account information
-    wallet_info = {'address': ETHEREUM_ADDRESS, 'type': 'dydx', 'strategy': 'hold'}
+    wallet_info = {'id': 'WALLET_ID', 'address': eth_address, 'type': 'dydx', 'strategy': 'hold'}
     processed_data = process_dydxv3_data(account_info, wallet_info)
 
     # Print the processed data
     for entry in processed_data:
-        print(entry)
+        logging.info(entry)

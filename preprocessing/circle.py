@@ -1,6 +1,7 @@
 import logging
 from typing import List, Dict, Any
 from datetime import datetime, timedelta
+
 from apis.circle import fetch_circle_user_balance, fetch_circle_user_deposits, fetch_circle_user_transfers, fetch_circle_user_redemptions
 
 logging.basicConfig(level=logging.INFO)
@@ -10,13 +11,13 @@ def create_position(wallet: Dict[str, str], amount: float, qty_opened: float, qt
     Helper function to create a position dictionary.
 
     Args:
-        wallet (dict): Wallet information.
+        wallet (Dict[str, str]): Wallet information.
         amount (float): Amount of the asset.
         qty_opened (float): Quantity opened.
         qty_closed (float): Quantity closed.
 
     Returns:
-        dict: Position dictionary.
+        Dict[str, Any]: Position dictionary.
     """
     chain = 'circle'
     protocol = 'circle'
@@ -39,7 +40,10 @@ def create_position(wallet: Dict[str, str], amount: float, qty_opened: float, qt
         'opened_qty': qty_opened,
         'closed_qty': qty_closed,
         'opened_price': 1,
-        'closed_price': 1
+        'closed_price': 1,
+        'fees_day': None,
+        'fees_asset': symbol,
+        'fees_day_usd': None
     }
 
 def process_circle_data(circle_data: Dict[str, Any], wallet: Dict[str, str], deposits: List[Dict[str, Any]], transfers: List[Dict[str, Any]], redemptions: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -47,14 +51,14 @@ def process_circle_data(circle_data: Dict[str, Any], wallet: Dict[str, str], dep
     Process Circle data to extract and structure relevant information.
 
     Args:
-        circle_data (dict): Data fetched from the Circle API.
-        wallet (dict): Dictionary containing wallet information (address, type, strategy).
-        deposits (list): List of deposit transactions.
-        transfers (list): List of transfer transactions.
-        redemptions (list): List of redemption transactions.
+        circle_data (Dict[str, Any]): Data fetched from the Circle API.
+        wallet (Dict[str, str]): Dictionary containing wallet information (address, type, strategy).
+        deposits (List[Dict[str, Any]]): List of deposit transactions.
+        transfers (List[Dict[str, Any]]): List of transfer transactions.
+        redemptions (List[Dict[str, Any]]): List of redemption transactions.
 
     Returns:
-        list: Processed data with wallet information included.
+        List[Dict[str, Any]]: Processed data with wallet information included.
     """
     data = []
 
@@ -73,3 +77,13 @@ def process_circle_data(circle_data: Dict[str, Any], wallet: Dict[str, str], dep
         data.append(position)
 
     return data
+
+# Example usage
+if __name__ == "__main__":
+    wallet = {'id': 'circle', 'address': 'circle', 'type': 'circle', 'strategy': 'hold'}
+    circle_data = fetch_circle_user_balance()
+    deposits = fetch_circle_user_deposits()
+    transfers = fetch_circle_user_transfers()
+    redemptions = fetch_circle_user_redemptions()
+    processed_data = process_circle_data(circle_data, wallet, deposits, transfers, redemptions)
+    logging.info(f"Processed Circle Data: {processed_data}")

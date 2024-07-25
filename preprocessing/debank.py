@@ -10,7 +10,7 @@ def create_position(wallet: Dict[str, str], position_id: str, chain: str, protoc
     Helper function to create a position dictionary.
 
     Args:
-        wallet (dict): Wallet information.
+        wallet (Dict[str, str]): Wallet information.
         position_id (str): Position ID.
         chain (str): Blockchain chain.
         protocol_id (str): Protocol ID.
@@ -20,7 +20,7 @@ def create_position(wallet: Dict[str, str], position_id: str, chain: str, protoc
         price (float): Price of the asset.
 
     Returns:
-        dict: Position dictionary.
+        Dict[str, Any]: Position dictionary.
     """ 
     return {
         'wallet_id': wallet['id'],
@@ -42,11 +42,11 @@ def process_evm_token_data(token_data: List[Dict[str, Any]], wallet: Dict[str, s
     Process EVM token data fetched from the Debank API.
 
     Args:
-        token_data (list): List of token data dictionaries fetched from Debank.
-        wallet (dict): Dictionary containing wallet information (address, type, strategy).
+        token_data (List[Dict[str, Any]]): List of token data dictionaries fetched from Debank.
+        wallet (Dict[str, str]): Dictionary containing wallet information (address, type, strategy).
 
     Returns:
-        list: Processed token data with wallet information included.
+        List[Dict[str, Any]]: Processed token data with wallet information included.
     """
     data = []
     for item in token_data:
@@ -76,11 +76,11 @@ def process_evm_protocol_data(protocol_data: List[Dict[str, Any]], wallet: Dict[
     Process EVM protocol data fetched from the Debank API.
 
     Args:
-        protocol_data (list): List of protocol data dictionaries fetched from Debank.
-        wallet (dict): Dictionary containing wallet information (address, type, strategy).
+        protocol_data (List[Dict[str, Any]]): List of protocol data dictionaries fetched from Debank.
+        wallet (Dict[str, str]): Dictionary containing wallet information (address, type, strategy).
 
     Returns:
-        list: Processed protocol data with wallet information included.
+        List[Dict[str, Any]]: Processed protocol data with wallet information included.
     """
     data = []
     for item in protocol_data:
@@ -161,4 +161,4 @@ if __name__ == "__main__":
     # Convert to DataFrame
     import pandas as pd
     df = pd.DataFrame(all_data)
-    print(df)
+    logging.info(df)

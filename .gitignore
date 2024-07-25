@@ -1,9 +1,8 @@
 # Ignore files holding sensitive information
 .env
 /dicts/wallets.xlsx
-/output/positions_data.xlsx
-/output/positions_database.xlsx
-/output/portfolio_dashboard.log
+output
+modifications/
 
 
 # Ignore virtual environment directories
@@ -23,5 +22,5 @@ __pycache__/
 Thumbs.db
 
 # Ignore IDE specific files
-.vscode/
 .idea/
+.python_packages

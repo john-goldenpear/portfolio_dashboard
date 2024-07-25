@@ -122,15 +122,14 @@ positions_df['bucket'] = positions_df['symbol'].map(lambda x: ASSETS_DICT.get(x,
 # Add notional column
 positions_df['notional'] = positions_df.apply(lambda row: abs(row['value']) if row['bucket'] != 'STABLE' else 0, axis=1)
 
-# Add cost_basis and change_amount columns
-positions_df['cost_basis'] = 0.0
+# Add change_amount columns
 positions_df['amount_change'] = 0.0
 
 # Reorder columns
-positions_df = positions_df[['date', 'wallet_address', 'wallet_id', 'wallet_type', 'contract_address', 'position_id', 'strategy', 'chain', 'protocol', 'symbol', 'base_asset', 'sector', 'bucket', 'type', 'amount', 'price', 'value', 'equity', 'notional', 'cost_basis', 'amount_change', 'unrealized_gain', 'realized_gain', 'income_usd']]
-
+positions_df = positions_df[['date', 'wallet_address', 'wallet_id', 'wallet_type', 'contract_address', 'position_id', 'strategy', 'chain', 'protocol', 'symbol', 'base_asset', 'sector', 'bucket', 'type', 'amount', 'price', 'value', 'equity', 'notional', 
+                             'opened_qty', 'closed_qty', 'opened_price', 'closed_price', 'cost_basis', 'unrealized_gain', 'realized_gain', 'income_usd', 'fees_day', 'fees_asset', 'fees_day_usd', 'amount_change']]
 # Check if the master file exists
-master_file = r'C:\Users\JohnRogic\OneDrive - Golden Pear\Shared Documents - GP Research Share Site\John\.Projects\.github\portfolio-dashboard\output\positions_database_test.xlsx'
+master_file = r'C:\Users\JohnRogic\OneDrive - Golden Pear\Shared Documents - GP Research Share Site\John\.Projects\.github\portfolio-dashboard\output\positions_database.xlsx'
 
 if os.path.exists(master_file):
     # Load the existing master file
@@ -165,7 +164,7 @@ else:
     positions_df.to_excel(master_file, index=False)
 
 # Save today's data to a separate file for reference
-filename = r'C:\Users\JohnRogic\OneDrive - Golden Pear\Shared Documents - GP Research Share Site\John\.Projects\.github\portfolio-dashboard\output\positions_data_test.xlsx'
+filename = r'C:\Users\JohnRogic\OneDrive - Golden Pear\Shared Documents - GP Research Share Site\John\.Projects\.github\portfolio-dashboard\output\positions_data.xlsx'
 positions_df.to_excel(filename, index=False)
 
 # Log script end time

@@ -1,6 +1,7 @@
 import requests
 import logging
-from typing import Dict, List
+from typing import Dict, List, Optional
+from apis.utils import fetch_with_retries
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -9,7 +10,7 @@ logging.basicConfig(level=logging.INFO)
 CRYPTOCOMPARE_API_URL = 'https://min-api.cryptocompare.com/data/price'
 CRYPTOCOMPARE_API_KEY = 'YOUR_API_KEY'  # Replace with your CryptoCompare API key
 
-def fetch_cryptocompare_price(symbol: str, currency: str = 'USD') -> float:
+def fetch_cryptocompare_price(symbol: str, currency: str = 'USD') -> Optional[float]:
     """
     Fetch the current price of a cryptocurrency symbol in a given currency.
 
@@ -18,26 +19,17 @@ def fetch_cryptocompare_price(symbol: str, currency: str = 'USD') -> float:
         currency (str): The currency to fetch the price in (default is 'USD').
 
     Returns:
-        float: The current price of the cryptocurrency.
+        Optional[float]: The current price of the cryptocurrency, or None if an error occurs.
     """
-    try:
-        params = {
-            'fsym': symbol,
-            'tsyms': currency,
-            'api_key': CRYPTOCOMPARE_API_KEY
-        }
-        response = requests.get(CRYPTOCOMPARE_API_URL, params=params)
-        response.raise_for_status()
-        data = response.json()
-        return data.get(currency, None)
-    except requests.exceptions.RequestException as e:
-        logging.error(f"HTTP request error: {e}")
-        return None
-    except KeyError as e:
-        logging.error(f"Failed to parse JSON response: {e}")
-        return None
+    params = {
+        'fsym': symbol,
+        'tsyms': currency,
+        'api_key': CRYPTOCOMPARE_API_KEY
+    }
+    data = fetch_with_retries(CRYPTOCOMPARE_API_URL, {}, params)
+    return data.get(currency, None)
 
-def fetch_multiple_prices(symbols: List[str], currency: str = 'USD') -> Dict[str, float]:
+def fetch_multiple_prices(symbols: List[str], currency: str = 'USD') -> Dict[str, Optional[float]]:
     """
     Fetch the current prices for multiple cryptocurrency symbols in a given currency.
 
@@ -46,14 +38,13 @@ def fetch_multiple_prices(symbols: List[str], currency: str = 'USD') -> Dict[str
         currency (str): The currency to fetch the prices in (default is 'USD').
 
     Returns:
-        Dict[str, float]: A dictionary with cryptocurrency symbols as keys and their current prices as values.
+        Dict[str, Optional[float]]: A dictionary with cryptocurrency symbols as keys and their current prices as values.
     """
     prices = {}
     unique_symbols = set(symbols)
     for symbol in unique_symbols:
         price = fetch_cryptocompare_price(symbol, currency)
-        if price is not None:
-            prices[symbol] = price
+        prices[symbol] = price
     return prices
 
 # Example usage
@@ -61,4 +52,4 @@ if __name__ == "__main__":
     symbols = ['BTC', 'ETH', 'SOL']
     prices = fetch_multiple_prices(symbols)
     for symbol, price in prices.items():
-        print(f"The current price of {symbol} is {price} USD")
+        logging.info(f"The current price of {symbol} is {price} USD")
