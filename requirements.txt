@@ -4,3 +4,4 @@ pandas
 python-dotenv
 openpyxl
 dydx-v3-python
+azure-functions
