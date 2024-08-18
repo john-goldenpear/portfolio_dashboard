@@ -2,7 +2,7 @@ import logging
 from typing import List, Dict, Any
 from datetime import datetime, timedelta
 
-from apis.circle import fetch_circle_user_balance, fetch_circle_user_deposits, fetch_circle_user_transfers, fetch_circle_user_redemptions
+from src.apis.circle import fetch_circle_user_balance, fetch_circle_user_deposits, fetch_circle_user_transfers, fetch_circle_user_redemptions
 
 logging.basicConfig(level=logging.INFO)
 

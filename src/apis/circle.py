@@ -1,6 +1,6 @@
 import logging
 from typing import Dict, Any, Optional
-from apis.utils import fetch_with_retries
+from src.apis.utils import fetch_with_retries
 from config import CIRCLE_API_KEY
 
 # Configure logging

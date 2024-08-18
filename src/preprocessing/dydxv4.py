@@ -2,7 +2,7 @@ import logging
 from typing import List, Dict, Any
 from datetime import datetime, timedelta
 
-from apis.dydxv4 import fetch_dydxv4_address_info, fetch_dydxv4_perpetual_positions
+from src.apis.dydxv4 import fetch_dydxv4_address_info, fetch_dydxv4_perpetual_positions
 
 logging.basicConfig(level=logging.INFO)
 

@@ -1,8 +1,8 @@
 import logging
 import time
 from typing import Dict, List, Optional
-from apis.cryptocompare import fetch_cryptocompare_price
-from apis.coingecko import fetch_coingecko_price
+from src.apis.cryptocompare import fetch_cryptocompare_price
+from src.apis.coingecko import fetch_coingecko_price
 from config import ASSETS_DICT
 
 logging.basicConfig(level=logging.INFO)

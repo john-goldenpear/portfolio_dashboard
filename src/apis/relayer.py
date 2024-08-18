@@ -1,6 +1,6 @@
 import logging
 from typing import Dict, Any
-from apis.utils import fetch_with_retries
+from src.apis.utils import fetch_with_retries
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)

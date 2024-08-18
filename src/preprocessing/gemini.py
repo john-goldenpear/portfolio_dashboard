@@ -2,7 +2,7 @@ import logging
 from typing import List, Dict, Any
 from datetime import datetime, timedelta
 
-from apis.gemini import fetch_gemini_user_perps_positions, fetch_gemini_user_spot_balances, fetch_gemini_user_perps_transactions, fetch_gemini_user_spot_transactions
+from src.apis.gemini import fetch_gemini_user_perps_positions, fetch_gemini_user_spot_balances, fetch_gemini_user_perps_transactions, fetch_gemini_user_spot_transactions
 
 logging.basicConfig(level=logging.INFO)
 

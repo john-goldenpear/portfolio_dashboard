@@ -5,7 +5,7 @@ import time
 import hashlib
 import logging
 from typing import Dict, Any
-from apis.utils import fetch_with_retries
+from src.apis.utils import fetch_with_retries
 from config import GEMINI_SPOT_API_KEY, GEMINI_SPOT_API_SECRET, GEMINI_PERPS_API_KEY, GEMINI_PERPS_API_SECRET
 
 # Configure logging

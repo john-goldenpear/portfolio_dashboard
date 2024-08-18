@@ -2,9 +2,6 @@
 import os
 import sys
 
-# Add the parent directory of src to sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 # import other packages
 import pandas as pd
 import logging
@@ -14,25 +11,25 @@ from datetime import datetime, timedelta
 from config import WALLETS, SOLANA_TOKENS, ASSETS_DICT
 
 # import custom api functions from project files
-from apis.circle import fetch_circle_user_balance, fetch_circle_user_deposits, fetch_circle_user_redemptions, fetch_circle_user_transfers
-from apis.gemini import fetch_gemini_user_spot_balances, fetch_gemini_user_spot_transfers, fetch_gemini_user_spot_transactions, fetch_gemini_user_spot_custody_fees, fetch_gemini_user_perps_positions, fetch_gemini_user_perps_transfers, fetch_gemini_user_perps_transactions, fetch_gemini_user_perps_account_balance
-from apis.debank import fetch_debank_user_balances_protocol, fetch_debank_user_balances_tokens
-from apis.relayer import fetch_relayer_positions
-from apis.blockcypher import fetch_blockcypher_user_balance, fetch_blockcypher_transactions
-from apis.solana import fetch_solana_user_balance, fetch_solana_user_token_balances
-from apis.dydxv4 import fetch_dydxv4_address_info
-from apis.dydxv3 import dydxClient
+from src.apis.circle import fetch_circle_user_balance, fetch_circle_user_deposits, fetch_circle_user_redemptions, fetch_circle_user_transfers
+from src.apis.gemini import fetch_gemini_user_spot_balances, fetch_gemini_user_spot_transfers, fetch_gemini_user_spot_transactions, fetch_gemini_user_spot_custody_fees, fetch_gemini_user_perps_positions, fetch_gemini_user_perps_transfers, fetch_gemini_user_perps_transactions, fetch_gemini_user_perps_account_balance
+from src.apis.debank import fetch_debank_user_balances_protocol, fetch_debank_user_balances_tokens
+from src.apis.relayer import fetch_relayer_positions
+from src.apis.blockcypher import fetch_blockcypher_user_balance, fetch_blockcypher_transactions
+from src.apis.solana import fetch_solana_user_balance, fetch_solana_user_token_balances
+from src.apis.dydxv4 import fetch_dydxv4_address_info
+from src.apis.dydxv3 import dydxClient
 
 # import custom preprocessing functions from project files
-from preprocessing.fetch_prices import fetch_multiple_prices
-from preprocessing.circle import process_circle_data
-from preprocessing.gemini import process_gemini_perps_data, process_gemini_spot_data
-from preprocessing.debank import process_evm_protocol_data, process_evm_token_data
-from preprocessing.relayer import process_relayer_position_data
-from preprocessing.blockcypher import process_blockcypher_data
-from preprocessing.dydxv4 import process_dydxv4_data
-from preprocessing.dydxv3 import process_dydxv3_data
-from preprocessing.solana import process_solana_data, process_solana_token_data
+from src.preprocessing.fetch_prices import fetch_multiple_prices
+from src.preprocessing.circle import process_circle_data
+from src.preprocessing.gemini import process_gemini_perps_data, process_gemini_spot_data
+from src.preprocessing.debank import process_evm_protocol_data, process_evm_token_data
+from src.preprocessing.relayer import process_relayer_position_data
+from src.preprocessing.blockcypher import process_blockcypher_data
+from src.preprocessing.dydxv4 import process_dydxv4_data
+from src.preprocessing.dydxv3 import process_dydxv3_data
+from src.preprocessing.solana import process_solana_data, process_solana_token_data
 
 # define function for main code
 def main():

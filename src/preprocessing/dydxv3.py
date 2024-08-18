@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 import logging
 from typing import Dict, Any, List
-from apis.dydxv3 import dydxClient
+from src.apis.dydxv3 import dydxClient
 
 logging.basicConfig(level=logging.INFO)
 
