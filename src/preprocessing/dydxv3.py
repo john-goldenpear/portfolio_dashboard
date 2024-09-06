@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Tuple
 from src.apis.dydxv3 import dydxClient
 
 logging.basicConfig(level=logging.INFO)
@@ -67,7 +67,7 @@ def process_dydxv3_data(dydxv3_data: Dict[str, Any], wallet: Dict[str, str]) -> 
 
     # Process open positions
     if open_perpetual_positions:
-        positions = []
+        positions: List[Tuple[Dict[str, Any], float, float, str, float, float, float, float, float]] = []
         for position_details in open_perpetual_positions.values():
             amount = float(position_details['size'])
             entry_price = float(position_details['entryPrice'])

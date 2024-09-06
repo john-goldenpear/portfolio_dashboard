@@ -2,6 +2,7 @@ import logging
 from dydx3 import Client
 from dydx3.constants import API_HOST_MAINNET
 from typing import Dict, Any
+from dydx3.errors import DydxApiError
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -34,8 +35,15 @@ class dydxClient:
         Returns:
             Dict[str, Any]: The account information.
         """
-        logging.info("Fetching account information.")
-        return self.client.private.get_account().data
+        try:
+            logging.info("Fetching account information.")
+            return self.client.private.get_account().data
+        except DydxApiError as e:
+            logging.error(f"dYdX API error while fetching account info: {e}")
+            raise
+        except Exception as e:
+            logging.error(f"Unexpected error while fetching account info: {e}")
+            raise
 
     def get_open_orders(self) -> Dict[str, Any]:
         """

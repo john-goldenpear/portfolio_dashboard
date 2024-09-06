@@ -1,7 +1,7 @@
-# dependencies
 requests
 pandas
 python-dotenv
 openpyxl
-dydx-v3-python
 azure-functions
+dydx-v3-python
+git+https://github.com/john-goldenpear/parsimonious-fixed.git@main

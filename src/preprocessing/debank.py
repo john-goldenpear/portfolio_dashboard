@@ -34,7 +34,7 @@ def create_position(wallet: Dict[str, str], position_id: str, chain: str, protoc
         'type': position_type,
         'symbol': symbol,
         'amount': amount,
-        'price': price
+        'price': price,
     }
 
 def process_evm_token_data(token_data: List[Dict[str, Any]], wallet: Dict[str, str]) -> List[Dict[str, Any]]:

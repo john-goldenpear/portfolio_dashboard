@@ -37,6 +37,7 @@ def create_position(wallet: Dict[str, str], amount: float, qty_opened: float, qt
         'symbol': symbol,
         'amount': amount,
         'price': 1.0,  # Price is 1.0 as it represents cash
+        'equity': None, # to be populated later
         'opened_qty': qty_opened,
         'closed_qty': qty_closed,
         'opened_price': 1,

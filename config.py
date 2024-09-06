@@ -26,3 +26,8 @@ SOLANA_TOKENS = solana_tokens_df.to_dict(orient='records')
 # Load the assets dictionary from the Excel file
 assets_df = pd.read_excel('dicts/assets.xlsx')
 ASSETS_DICT = assets_df.set_index('symbol').to_dict(orient='index')
+
+# File path constants
+LOG_FILE_PATH = 'output/logs.log'
+MASTER_FILE_PATH = 'output/database.xlsx'
+OUTPUT_FILE_PATH = f'output/positions_{pd.Timestamp.now().strftime("%Y%m%d")}.xlsx'

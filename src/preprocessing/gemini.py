@@ -44,6 +44,7 @@ def create_position(wallet: Dict[str, str], data_type: str, symbol: str, amount:
         'symbol': symbol,
         'amount': amount,
         'price': price,
+        'equity': None, # to be populated later
         'cost_basis': cost_basis,
         'unrealized_gain': unrealized_gain,
         'realized_gain': realized_gain,
