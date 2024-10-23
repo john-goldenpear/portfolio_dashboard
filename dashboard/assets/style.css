@@ -1,0 +1,131 @@
+/* assets/style.css */
+
+/* General styles */
+body {
+    background-color: #000000;
+    color: #FFFFFF;
+    font-family: 'Rajdhani', sans-serif;
+}
+
+/* Title styles */
+.title {
+    text-align: left;
+    font-size: 48px;
+    font-weight: normal;
+    margin: 0;
+    border-bottom: 3px solid rgb(52,224,190);
+    padding-bottom: 5px;
+}
+
+/* Flex container for dropdown and boxes */
+.flex-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 40px;
+    margin-top: 20px;
+}
+
+/* Box styles */
+.box {
+    border: 1px solid rgb(52,224,190);
+    padding: 13px;
+    margin: 0; /* Remove margin between boxes */
+    width: 150px;
+    text-align: center;
+}
+
+.box-white {
+    border: 1px solid #FFFFFF;
+}
+
+/* Dropdown styles */
+.dropdown {
+    margin-right: 20px; /* Space between dropdown and first box */
+    width: 300px;
+    height: 80px; /* Increased height of the dropdown control */
+    background-color: #000000;
+    color: #FFFFFF;
+    display: flex;
+    font-size: 30px;
+    align-items: center; /* Vertically center the text */
+    padding: 0 10px; /* Add padding for better text alignment */
+}
+
+/* Ensure selected text is white and centered */
+.Select-control {
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
+    height: 80px; /* Match the height of the dropdown control */
+    display: flex;
+    align-items: center; /* Vertically center the content */
+    justify-content: space-between; /* Space between text and arrow/x */
+    padding: 0 10px; /* Add padding to ensure text is not too close to the edges */
+}
+
+.Select-value {
+    display: flex;
+    align-items: center; /* Vertically center the selected text */
+    color: #FFFFFF !important;
+    flex-grow: 1; /* Allow the text to take up available space */
+}
+
+.Select-value-label {
+    color: #FFFFFF !important; /* Ensure the selected text is white */
+}
+
+.Select-arrow-zone, .Select-clear-zone {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto; /* Push the arrow and clear button to the right */
+}
+
+.Select-menu-outer {
+    background-color: #000000 !important;
+    color: #FFFFFF !important;
+    max-height: 300px; /* Maximum height of the dropdown menu */
+    overflow-y: auto; /* Enable scrolling if the content exceeds the max height */
+}
+
+.Select-option.is-selected {
+    background-color: #333333 !important;
+    color: #FFFFFF !important;
+}
+
+/* Bar chart styles */
+.bar-charts-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+}
+
+.bar-charts-container .dash-graph {
+    flex: 1;
+    margin-right: 20px;
+}
+
+.bar-charts-container .dash-graph:last-child {
+    margin-right: 0;
+}
+
+/* Table styles */
+.table-header {
+    color: rgb(194,166,66);
+    font-size: 24px;
+    font-weight: normal;
+    margin: 0;
+}
+
+.table-cell {
+    padding: 1px;
+    line-height: 1;
+    text-align: left;
+    width: 16%;
+}
+
+/* Pie chart styles */
+.pie-chart {
+    width: 439px;
+    height: 439px;
+    margin-top: -15px;
+}
